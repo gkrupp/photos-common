@@ -6,6 +6,7 @@ class _processing {
     this.coll = coll
   }
 
+  static get projections () { return {} }
   static get defaultRetries () { return 3 }
   static get defaultGenid () { return nanoid }
   static get canProcess () {

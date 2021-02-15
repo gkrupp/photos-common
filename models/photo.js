@@ -117,6 +117,41 @@ module.exports = class Photo extends _processing {
     return { insert, update, remain, remove }
   }
 
+  static publicTransform (doc, details = 'basic', keepId = true) {
+    if (typeof doc !== 'object') return doc
+    delete doc._id
+    delete doc.path
+    delete doc.permissions
+    delete doc.stats
+    delete doc._processingFlags
+    delete doc.hash
+    // id
+    if (!keepId) {
+      delete doc.id
+    }
+    // thumbnails
+    if (typeof doc.thumbnails === 'object') {
+      if (['basic', 'minimal'].includes(details)) {
+        doc.thumbnails = Object.keys(doc.thumbnails)
+      } else {
+        for (const size in doc.thumbnails) {
+          delete doc.thumbnails[size].path
+        }
+      }
+    }
+    // dimensions
+    if (typeof doc.dimensions === 'object') {
+      if (['basic', 'minimal'].includes(details)) {
+        delete doc.dimensions.mpx
+        delete doc.dimensions.aspectRatio
+        delete doc.dimensions.channels
+        delete doc.dimensions.density
+        delete doc.dimensions.hasAlpha
+      }
+    }
+    return doc
+  }
+
   static async removeThumbs (ids = [], thumbDir = '', thumbTypes = [], extension = '.jpg') {
     const isArray = (ids instanceof Array)
     if (!isArray) ids = [ids]

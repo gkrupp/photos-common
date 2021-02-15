@@ -76,4 +76,19 @@ module.exports = class Album extends _processing {
     }
     return { insert, update, remain, remove }
   }
+
+  static publicTransform (doc, details = 'basic', keepId = true) {
+    if (typeof doc !== 'object') return doc
+    delete doc._id
+    delete doc.path
+    delete doc.permissions
+    delete doc.stats
+    delete doc._processingFlags
+    // id
+    if (!keepId) {
+      delete doc.id
+    }
+    // ret
+    return doc
+  }
 }
