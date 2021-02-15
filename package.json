@@ -1,0 +1,27 @@
+{
+  "name": "common",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "./node_modules/.bin/eslint .",
+    "prettify": "./node_modules/.bin/prettier-standard **/*.js"
+  },
+  "author": "gkrupp",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "eslint": "^7.19.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "prettier": "^2.2.1",
+    "prettier-standard": "^16.4.1"
+  },
+  "dependencies": {
+    "bull": "^3.20.1",
+    "mongodb": "^3.6.4",
+    "nanoid": "^3.1.20"
+  }
+}
