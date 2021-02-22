@@ -13,9 +13,10 @@ module.exports = class Album extends _processing {
 
   static get projections () { return projections.albums }
   static get defaultGenid () { return () => nanoid(64) }
+  static validateId (id) { return (typeof id === 'string' && id.length === 64) }
 
   static async newDocument ({
-    id = null, userId, parentId, path, name,
+    id = null, userId, albumId, parentId, path, name,
     created, modified,
     permissions = [],
     indexed = new Date(), processed = null,
@@ -30,6 +31,7 @@ module.exports = class Album extends _processing {
     return {
       id: (typeof id === 'string') ? id : null,
       userId: (typeof userId === 'string') ? userId : null,
+      albumId: (typeof albumId === 'string') ? albumId : (typeof parentId === 'string') ? parentId : null,
       parentId: (typeof parentId === 'string') ? parentId : null,
       path: (typeof path === 'string') ? path : null,
       name: ((typeof name === 'string') ? name : null) || ((typeof path === 'string') ? path.match(/([^/]*)\/*$/)[1] : null),
@@ -77,7 +79,7 @@ module.exports = class Album extends _processing {
     return { insert, update, remain, remove }
   }
 
-  static publicTransform (doc, details = 'basic', keepId = true) {
+  static publicTransform (doc, details = 'basic', { includeId = true, includeUser = true } = {}) {
     if (typeof doc !== 'object') return doc
     delete doc._id
     delete doc.path
@@ -85,8 +87,13 @@ module.exports = class Album extends _processing {
     delete doc.stats
     delete doc._processingFlags
     // id
-    if (!keepId) {
+    if (!includeId) {
       delete doc.id
+    }
+    // user
+    if (!includeUser) {
+      delete doc.userId
+      delete doc.userName
     }
     // ret
     return doc

@@ -57,10 +57,16 @@ class _processing {
     return this.coll.findOne(filter, { projection })
   }
 
-  async find (filter, projection) {
+  async find (filter, projection, { sort = null, skip = null, limit = null, toArray = true, count = false } = {}) {
     if (typeof filter === 'string') return this.findOne(filter, projection)
     if (filter instanceof Array) filter = { id: { $id: filter } }
-    return this.coll.find(filter, { projection }).toArray()
+    const res = this.coll.find(filter, { projection })
+    if (sort) res.sort(sort)
+    if (skip) res.skip(skip)
+    if (limit) res.limit(limit)
+    if (toArray) return res.toArray()
+    if (count) return res.count()
+    return res
   }
 
   async insertOne (document = null, genid = this.constructor.defaultGenid, retries = this.constructor.defaultRetries) {

@@ -17,10 +17,10 @@ module.exports = class Photo extends _processing {
   static get projections () { return projections.photos }
   static get allowedFileTypes () { return ['.jpg'] }
   static get defaultGenid () { return () => nanoid(128) }
+  static validateId (id) { return (typeof id === 'string' && id.length === 128) }
 
   static async newDocument ({
-    id = null, userId, parentId, path, name,
-    albumId,
+    id = null, userId, albumId, parentId, path, name,
     fileName, extension, size,
     created, modified,
     permissions = [],
@@ -37,10 +37,10 @@ module.exports = class Photo extends _processing {
     return {
       id: (typeof id === 'string') ? id : null,
       userId: (typeof userId === 'string') ? userId : null,
+      albumId: (typeof albumId === 'string') ? albumId : (typeof parentId === 'string') ? parentId : null,
       parentId: (typeof parentId === 'string') ? parentId : null,
       path: (typeof path === 'string') ? path : null,
       name: ((typeof name === 'string') ? name : null) || ((typeof path === 'string') ? pathlib.basename(path) : null),
-      albumId: (typeof albumId === 'string') ? albumId : (typeof parentId === 'string') ? parentId : null,
       fileName: ((typeof fileName === 'string') ? fileName : null) || ((typeof path === 'string') ? pathlib.basename(path) : null),
       extension: (typeof extension === 'string') ? extension : ((typeof path === 'string') ? pathlib.extname(path).toLowerCase() : null),
       size: Number(size) || null,
@@ -117,7 +117,7 @@ module.exports = class Photo extends _processing {
     return { insert, update, remain, remove }
   }
 
-  static publicTransform (doc, details = 'basic', keepId = true) {
+  static publicTransform (doc, details = 'basic', { includeId = true, includeUser = true } = {}) {
     if (typeof doc !== 'object') return doc
     delete doc._id
     delete doc.path
@@ -126,8 +126,13 @@ module.exports = class Photo extends _processing {
     delete doc._processingFlags
     delete doc.hash
     // id
-    if (!keepId) {
+    if (!includeId) {
       delete doc.id
+    }
+    // user
+    if (!includeUser) {
+      delete doc.userId
+      delete doc.userName
     }
     // thumbnails
     if (typeof doc.thumbnails === 'object') {
