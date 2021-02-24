@@ -7,12 +7,13 @@ const items = {
   all: {},
   default: { ..._default },
   id: { ..._default },
-  physical: { ..._default, userId: 1, parentId: 1, path: 1, name: 1, fileName: 1, size: 1, created: 1, modified: 1 }
+  physical: { ..._default, userId: 1, parentId: 1, path: 1, name: 1, fileName: 1, size: 1, created: 1, modified: 1 },
+  serve: { ..._default, path: 1, fileName: 1, permissions: 1 }
 }
 
 const albums = {
-  apiAll: { ..._default, userId: 1, name: 1, created: 1, modified: 1, indexed: 1, processed: 1, flags: 1 },
-  apiBasic: { ..._default, userId: 1, name: 1, created: 1, modified: 1, flags: 1 },
+  apiAll: { ..._default, userId: 1, name: 1, fileName: 1, created: 1, modified: 1, indexed: 1, processed: 1, flags: 1 },
+  apiBasic: { ..._default, userId: 1, name: 1, fileName: 1, created: 1, modified: 1, flags: 1 },
   apiMinimal: { ..._default, userId: 1, name: 1 },
   ...items
 }
@@ -22,7 +23,6 @@ const photos = {
   apiBasic: { ..._default, userId: 1, name: 1, fileName: 1, size: 1, created: 1, modified: 1, flags: 1, dimensions: 1 },
   apiMinimal: { ..._default, userId: 1, name: 1, dimensions: 1 },
   processor: { ..._default, path: 1 },
-  serve: { ..._default, path: 1, fileName: 1 },
   thumbnails: { ..._default, thumbnails: 1, fileName: 1 },
   ...items
 }

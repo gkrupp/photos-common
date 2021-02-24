@@ -1,6 +1,9 @@
 
 const fs = require('fs')
+const pathlib = require('path')
 const { nanoid } = require('nanoid')
+
+const archiver = require('archiver')
 
 const projections = require('../constants/projections')
 const _processing = require('./_processing')
@@ -16,7 +19,7 @@ module.exports = class Album extends _processing {
   static validateId (id) { return (typeof id === 'string' && id.length === 64) }
 
   static async newDocument ({
-    id = null, userId, albumId, parentId, path, name,
+    id = null, userId, albumId, parentId, path, name, fileName,
     created, modified,
     permissions = [],
     indexed = new Date(), processed = null,
@@ -34,7 +37,8 @@ module.exports = class Album extends _processing {
       albumId: (typeof albumId === 'string') ? albumId : (typeof parentId === 'string') ? parentId : null,
       parentId: (typeof parentId === 'string') ? parentId : null,
       path: (typeof path === 'string') ? path : null,
-      name: ((typeof name === 'string') ? name : null) || ((typeof path === 'string') ? path.match(/([^/]*)\/*$/)[1] : null),
+      name: ((typeof name === 'string') ? name : null) || ((typeof fileName === 'string') ? fileName : null) || ((typeof path === 'string') ? path.match(/([^/]*)\/*$/)[1] : null),
+      fileName: ((typeof fileName === 'string') ? fileName : null) || ((typeof path === 'string') ? pathlib.basename(path) : null),
       created: new Date(created) || null,
       modified: new Date(modified) || null,
       permissions: (permissions instanceof Array) ? permissions : [],
@@ -48,6 +52,34 @@ module.exports = class Album extends _processing {
 
   async children (userId, parentId, projection = Album.projections.default) {
     return this.coll.find({ userId, parentId }, { projection }).toArray()
+  }
+
+  async getServedFromId (id, writeStream = null, { type = 'zip', statConcurrency = 2, level = 0 } = {}) {
+    const serve = await this.findOne(id, Album.projections.serve)
+    if (!serve) return null
+    // archive
+    const archive = archiver(type, {
+      statConcurrency,
+      zlib: { level }
+    })
+    archive.on('warning', (err) => {
+      console.error(err)
+      throw err
+    })
+    archive.on('error', (err) => {
+      throw err
+    })
+    archive.directory(serve.path, serve.fileName)
+    if (writeStream) {
+      archive.pipe(writeStream)
+      await archive.finalize()
+      return serve
+    } else {
+      return {
+        ...serve,
+        archive
+      }
+    }
   }
 
   static merge (inDB, inFS) {

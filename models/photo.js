@@ -20,8 +20,8 @@ module.exports = class Photo extends _processing {
   static validateId (id) { return (typeof id === 'string' && id.length === 128) }
 
   static async newDocument ({
-    id = null, userId, albumId, parentId, path, name,
-    fileName, extension, size,
+    id = null, userId, albumId, parentId, path, name, fileName,
+    extension, size,
     created, modified,
     permissions = [],
     indexed = new Date(), processed = null,
