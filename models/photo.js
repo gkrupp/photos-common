@@ -154,6 +154,8 @@ module.exports = class Photo extends _processing {
         delete doc.dimensions.hasAlpha
       }
     }
+    //
+    doc._details = details
     return doc
   }
 

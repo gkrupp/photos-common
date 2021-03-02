@@ -127,7 +127,8 @@ module.exports = class Album extends _processing {
       delete doc.userId
       delete doc.userName
     }
-    // ret
+    //
+    doc._details = details
     return doc
   }
 }
