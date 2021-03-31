@@ -66,7 +66,7 @@ module.exports = class Photo extends _processing {
       } else {
         const inserted = docs.map((doc, i) => ({ id: ret[i], path: doc.path }))
         await Promise.all(inserted.map(photo => this.processorQueue.add(this.host, photo)))
-        await this._processingFlags({ processing: true }, { id: { $in: ret } })
+        await this._processingFlags(ret, { processing: true })
         console.log(`processQueue.add(${inserted.length} photos)`)
       }
     }

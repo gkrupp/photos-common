@@ -135,10 +135,12 @@ class _processing {
     else return this.coll.updateMany({ id: { $in: id } }, { $inc: incs, $set: sets })
   }
 
-  async _processingFlags (query, flags, docIds = null) {
+  async _processingFlags (query, flags) {
     flags = _processing.convertFlags(flags, '_processingFlags')
-    if (docIds instanceof Array) {
-      query.id = { $in: docIds }
+    if (typeof query === 'string') {
+      query = { id: query }
+    } else if (query instanceof Array) {
+      query = { id: { $in: query } }
     }
     return (await this.coll.updateMany(query, { $set: flags })).result.nModified
   }
