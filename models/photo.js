@@ -24,7 +24,7 @@ module.exports = class Photo extends _processing {
     extension, size,
     created, modified,
     permissions = [],
-    indexed = new Date(), processed = null,
+    indexed = new Date(), processed = null, mlprocessed = null,
     flags = {}, stats = {},
     _processingFlags = {}
   }, { getStats = false }) {
@@ -49,6 +49,7 @@ module.exports = class Photo extends _processing {
       permissions: (permissions instanceof Array) ? permissions : [],
       indexed: new Date(indexed),
       processed: processed ? new Date(processed) : null,
+      mlprocessed: mlprocessed ? new Date(mlprocessed) : null,
       flags: (flags instanceof Object) ? flags : {},
       stats: (stats instanceof Object) ? stats : {},
       _processingFlags: (_processingFlags instanceof Object) ? _processingFlags : {}

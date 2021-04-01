@@ -18,8 +18,18 @@ class _processing {
         ]
       }, {
         $or: [
+          { '_processingFlags.mlprocessing': { $exists: false } },
+          { '_processingFlags.mlprocessing': false }
+        ]
+      }, {
+        $or: [
           { '_processingFlags.processingError': { $exists: false } },
           { '_processingFlags.processingError': null }
+        ]
+      }, {
+        $or: [
+          { '_processingFlags.mlprocessingError': { $exists: false } },
+          { '_processingFlags.mlprocessingError': null }
         ]
       }]
     }
