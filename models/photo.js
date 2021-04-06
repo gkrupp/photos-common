@@ -7,11 +7,12 @@ const projections = require('../constants/projections')
 const _processing = require('./_processing')
 
 module.exports = class Photo extends _processing {
-  constructor (coll, { host = '*', processorQueue = null } = {}) {
+  constructor (coll, { host = '*', processorQueue = null, thumbnailCache = null } = {}) {
     super(coll)
     this.coll = coll
     this.host = host
     this.processorQueue = processorQueue
+    this.thumbnailCache = thumbnailCache
   }
 
   static get projections () { return projections.photos }
@@ -73,6 +74,18 @@ module.exports = class Photo extends _processing {
     }
     if (returnOne) return ret[0]
     else return ret
+  }
+
+  async fullRemove (query) {
+    if (this.thumbnailCache) {
+      const deleted = await this.find(query, Photo.projections.thumbnails)
+      for (const doc of deleted) {
+        for (const tnType in doc.thumbnails) {
+          await this.thumbnailCache.remove(doc.id, [tnType, 'jpg'])
+        }
+      }
+    }
+    await this.deleteMany(query)
   }
 
   async getServedFromId (id, size = 'original') {
@@ -160,7 +173,7 @@ module.exports = class Photo extends _processing {
     return doc
   }
 
-  static async removeThumbs (ids = [], thumbDir = '', thumbTypes = [], extension = '.jpg') {
+  static async removeThumbsnails (ids = [], thumbDir = '', thumbTypes = [], extension = '.jpg') {
     const isArray = (ids instanceof Array)
     if (!isArray) ids = [ids]
     await Promise.all(ids.map(id =>

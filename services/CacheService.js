@@ -10,26 +10,28 @@ class CacheManager {
     if (init) this.__init()
   }
 
-  async locate (hash, filename = null, create = true) {
+  async locate (hash, ext = null, create = true) {
     const dirs = hash.substr(0, this.levels).split('')
     const path = pathlib.join(this.root, ...dirs)
     if (create) this.createDir(path)
-    return pathlib.join(path, filename || hash)
+    return pathlib.join(path, this.__filename(hash, ext))
   }
 
-  async exists (hash, filename = null) {
-    const path = this.locate(hash, filename, false)
+  async exists (hash, ext = null) {
+    const path = this.locate(hash, ext, false)
     return this.__exists(path)
   }
 
-  async size (hash, filename = null) {
-    const path = this.locate(hash, filename, false)
+  async size (hash, ext = null) {
+    const path = this.locate(hash, ext, false)
     return this.__exists(path)
   }
 
-  async remove (hash, filename = null) {
-    const path = await this.locate(hash, filename, false)
+  async remove (hash, ext = null) {
+    const path = await this.locate(hash, ext, false)
     await fs.promises.rm(path)
+      .then(() => true)
+      .catch(() => false)
   }
 
   async erase (confirm = false, reinit = true) {
@@ -55,6 +57,12 @@ class CacheManager {
     if (!fs.existsSync(this.root)) {
       fs.mkdirSync(this.root)
     }
+  }
+
+  __filename (hash, ext) {
+    return (ext)
+      ? [hash, (ext instanceof Array) ? ext.join('.') : ext].join('.')
+      : hash
   }
 
   async __exists (path) {
