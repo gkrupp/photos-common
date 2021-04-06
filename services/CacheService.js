@@ -13,17 +13,17 @@ class CacheManager {
   async locate (hash, ext = null, create = true) {
     const dirs = hash.substr(0, this.levels).split('')
     const path = pathlib.join(this.root, ...dirs)
-    if (create) this.createDir(path)
+    if (create) await this.createDir(path)
     return pathlib.join(path, this.__filename(hash, ext))
   }
 
   async exists (hash, ext = null) {
-    const path = this.locate(hash, ext, false)
+    const path = await this.locate(hash, ext, false)
     return this.__exists(path)
   }
 
   async size (hash, ext = null) {
-    const path = this.locate(hash, ext, false)
+    const path = await this.locate(hash, ext, false)
     return this.__exists(path)
   }
 
