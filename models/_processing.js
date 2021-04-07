@@ -7,6 +7,7 @@ class _processing {
   }
 
   static get projections () { return {} }
+  static get aggregations () { return {} }
   static get defaultRetries () { return 3 }
   static get defaultGenid () { return nanoid }
   static get canProcess () {
@@ -75,12 +76,24 @@ class _processing {
     if (typeof filter === 'string') return this.findOne(filter, projection)
     if (filter instanceof Array) filter = { id: { $id: filter } }
     const res = this.coll.find(filter, { projection })
+    if (count) return res.count()
     if (sort) res.sort(sort)
     if (skip) res.skip(skip)
     if (limit) res.limit(limit)
     if (toArray) return res.toArray()
-    if (count) return res.count()
     return res
+  }
+
+  async aggregate (query, pipeline = [], { toArray = true } = {}) {
+    const res = this.coll.aggregate([{ $match: query }, ...pipeline])
+    if (toArray) return res.toArray()
+    return res
+  }
+
+  async aggregateOne (query, pipeline = []) {
+    const res = await this.coll.aggregate([{ $match: query }, ...pipeline]).toArray()
+    if (res) return res[0]
+    else return null
   }
 
   async insertOne (document = null, genid = this.constructor.defaultGenid, retries = this.constructor.defaultRetries) {
@@ -125,6 +138,20 @@ class _processing {
 
   async deleteMany (query) {
     return (await this.coll.deleteMany(query)).deletedCount
+  }
+
+  async countChildItems (albumId) {
+    return await this.find({ albumId }, null, { count: true })
+  }
+
+  async getItems (query, opt = {}, { one = false } = {}) {
+    const defaultDetails = 'default'
+    const defaultAggregation = 'apiDefault'
+    const details = (opt.details || defaultDetails).toLowerCase()
+    let aggr = ['api', details[0].toUpperCase() + details.slice(1)].join('')
+    if (!(aggr in this.constructor.aggregations)) aggr = defaultAggregation
+    if (one) return this.aggregateOne(query, this.constructor.aggregations[aggr](opt))
+    else return this.aggregate(query, this.constructor.aggregations[aggr](opt))
   }
 
   async updateEventStat (id, event = 'served', target = null, change = 1, last = new Date(), statField = 'stats') {

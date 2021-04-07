@@ -4,6 +4,7 @@ const pathlib = require('path')
 const { nanoid } = require('nanoid')
 
 const projections = require('../constants/projections')
+const aggregations = require('../constants/aggregations')
 const _processing = require('./_processing')
 
 module.exports = class Photo extends _processing {
@@ -16,6 +17,7 @@ module.exports = class Photo extends _processing {
   }
 
   static get projections () { return projections.photos }
+  static get aggregations () { return aggregations.photos }
   static get allowedFileTypes () { return ['.jpg'] }
   static get defaultGenid () { return () => nanoid(128) }
   static validateId (id) { return (typeof id === 'string' && id.length === 128) }
@@ -131,6 +133,7 @@ module.exports = class Photo extends _processing {
     return { insert, update, remain, remove }
   }
 
+  /*
   static publicTransform (doc, details = 'basic', { includeId = true, includeUser = true } = {}) {
     if (typeof doc !== 'object') return doc
     delete doc._id
@@ -172,6 +175,7 @@ module.exports = class Photo extends _processing {
     doc._details = details
     return doc
   }
+  */
 
   static async removeThumbsnails (ids = [], thumbDir = '', thumbTypes = [], extension = '.jpg') {
     const isArray = (ids instanceof Array)

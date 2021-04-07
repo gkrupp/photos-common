@@ -6,6 +6,7 @@ const { nanoid } = require('nanoid')
 const archiver = require('archiver')
 
 const projections = require('../constants/projections')
+const aggregations = require('../constants/aggregations')
 const _processing = require('./_processing')
 
 module.exports = class Album extends _processing {
@@ -15,6 +16,7 @@ module.exports = class Album extends _processing {
   }
 
   static get projections () { return projections.albums }
+  static get aggregations () { return aggregations.albums }
   static get defaultGenid () { return () => nanoid(64) }
   static validateId (id) { return (typeof id === 'string' && id.length === 64) }
 
@@ -22,7 +24,7 @@ module.exports = class Album extends _processing {
     id = null, userId, albumId, parentId, path, name, fileName,
     created, modified,
     permissions = [],
-    indexed = new Date(), processed = null,
+    indexed = new Date(), processed = null, mlprocessed = null,
     flags = {}, stats = {},
     _processingFlags = {}
   }, { getStats = false }) {
@@ -44,6 +46,7 @@ module.exports = class Album extends _processing {
       permissions: (permissions instanceof Array) ? permissions : [],
       indexed: new Date(indexed),
       processed: processed ? new Date(processed) : new Date(indexed),
+      mlprocessed: mlprocessed ? new Date(mlprocessed) : (processed ? new Date(processed) : new Date(indexed)),
       flags: (flags instanceof Object) ? flags : {},
       stats: (stats instanceof Object) ? stats : {},
       _processingFlags: (_processingFlags instanceof Object) ? _processingFlags : {}
@@ -111,6 +114,7 @@ module.exports = class Album extends _processing {
     return { insert, update, remain, remove }
   }
 
+  /*
   static publicTransform (doc, details = 'basic', { includeId = true, includeUser = true } = {}) {
     if (typeof doc !== 'object') return doc
     delete doc._id
@@ -131,4 +135,5 @@ module.exports = class Album extends _processing {
     doc._details = details
     return doc
   }
+  */
 }
