@@ -148,10 +148,13 @@ class _processing {
     const defaultDetails = 'default'
     const defaultAggregation = 'apiDefault'
     const details = (opt.details || defaultDetails).toLowerCase()
+    // aggr
     let aggr = ['api', details[0].toUpperCase() + details.slice(1)].join('')
     if (!(aggr in this.constructor.aggregations)) aggr = defaultAggregation
-    if (one) return this.aggregateOne(query, this.constructor.aggregations[aggr](opt))
-    else return this.aggregate(query, this.constructor.aggregations[aggr](opt))
+    const aggrPipe = this.constructor.aggregations[aggr](opt)
+    // exec
+    if (one) return this.aggregateOne(query, aggrPipe)
+    else return this.aggregate(query, aggrPipe)
   }
 
   async updateEventStat (id, event = 'served', target = null, change = 1, last = new Date(), statField = 'stats') {

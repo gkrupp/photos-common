@@ -4,8 +4,8 @@ const projections = require('./projections')
 const allowedSortingFields = ['name', 'created', 'modified', 'fileName']
 
 const modifiers = {
-  sort: (opt = {}) => {
-    const sorting = opt.sort
+  sort: ({ sort = 'created:1' } = {}) => {
+    const sorting = sort
       .split(',')
       .reduce((desc, rule) => {
         rule = rule.split(':')
@@ -55,9 +55,18 @@ const albums = {
 }
 
 const photos = {
-  apiAll: () => [],
-  apiDefault: () => [],
-  apiMinimal: () => []
+  apiAll: (opt = {}) => [
+    { $project: projections.photos.apiAll(opt) },
+    ...modifierGroup.sortSkipLimit(opt)
+  ],
+  apiDefault: (opt = {}) => [
+    { $project: projections.photos.apiDefault(opt) },
+    ...modifierGroup.sortSkipLimit(opt)
+  ],
+  apiMinimal: (opt = {}) => [
+    { $project: projections.photos.apiMinimal(opt) },
+    ...modifierGroup.sortSkipLimit(opt)
+  ]
 }
 
 module.exports = {

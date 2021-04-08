@@ -20,17 +20,36 @@ const chunks = {
     name: 1,
     fileName: 1
   }),
-  sizing: () => ({
-    'dimensions.width': 'width',
-    'dimensions.height': 'height'
+  wh: () => ({
+    width: '$dimensions.width',
+    height: '$dimensions.height'
+  }),
+  thumbnails: () => ({
+    thumbnails: {
+      $arrayToObject: {
+        $map: {
+          input: { $objectToArray: '$thumbnails' },
+          in: {
+            k: '$$this.k',
+            v: ['$$this.v.width', '$$this.v.height']
+          }
+        }
+      }
+    }
   }),
   meta: () => ({
     dimensions: 1,
     exif: 1
   }),
   ml: () => ({
-    'colors.rgb': 1,
-    objects: 1
+    colors: {
+      palette: '$colors.palette.rgb',
+      prominent: '$colors.prominent.rgb'
+    },
+    objects: {
+      preds: 1,
+      labels: 1
+    }
   })
 }
 
@@ -71,9 +90,38 @@ const albums = {
 }
 
 const photos = {
-  // apiAll: { ..._default, userId: 1, albumId: 1, ..._chunks.naming, extension: 1, size: 1, ..._chunks.createmod, ..._chunks.processing, flags: 1, ..._chunks.sizing, thumbnails: 1, ..._chunks.meta, ..._chunks.ml },
-  // apiDefault: { ..._default, userId: 1, ..._chunks.naming, ..._chunks.createmod, flags: 1, ..._chunks.sizing },
-  // apiMinimal: { ..._default, userId: 1, name: 1, dimensions: 1 },
+  apiAll: (opt = {}) => ({
+    ...chunks.ids(opt),
+    userId: 1,
+    albumId: 1,
+    ...chunks.naming(opt),
+    extension: 1,
+    size: 1,
+    ...chunks.createmod(opt),
+    permissions: 1,
+    ...chunks.processing(opt),
+    flags: 1,
+    ...chunks.wh(opt),
+    ...chunks.thumbnails(opt),
+    ...chunks.meta(opt),
+    ...chunks.ml(opt)
+  }),
+  apiDefault: (opt = {}) => ({
+    ...chunks.ids(opt),
+    userId: 1,
+    name: 1,
+    created: 1,
+    flags: 1,
+    ...chunks.wh(opt),
+    ...chunks.thumbnails(opt)
+  }),
+  apiMinimal: (opt = {}) => ({
+    ...chunks.ids(opt),
+    name: 1,
+    created: 1,
+    ...chunks.wh(opt),
+    ...chunks.thumbnails(opt)
+  }),
   processor: { ..._default, path: 1 },
   thumbnails: { ..._default, thumbnails: 1, fileName: 1 },
   ...items
