@@ -8,12 +8,11 @@ const aggregations = require('../constants/aggregations')
 const _processing = require('./_processing')
 
 module.exports = class Photo extends _processing {
-  constructor (coll, { host = '*', processorQueue = null, thumbnailCache = null } = {}) {
+  constructor (coll, { host = '*', processorQueue = null } = {}) {
     super(coll)
     this.coll = coll
     this.host = host
     this.processorQueue = processorQueue
-    this.thumbnailCache = thumbnailCache
   }
 
   static get projections () { return projections.photos }
@@ -27,9 +26,9 @@ module.exports = class Photo extends _processing {
     extension, size,
     created, modified,
     permissions = [],
-    indexed = new Date(), processed = null, mlprocessed = null,
+    indexed = new Date(), processed = {},
     flags = {}, stats = {},
-    _processingFlags = {}
+    _processingFlags = []
   }, { getStats = false }) {
     if (getStats) {
       const stat = await fs.promises.stat(path)
@@ -51,11 +50,10 @@ module.exports = class Photo extends _processing {
       modified: new Date(modified) || null,
       permissions: (permissions instanceof Array) ? permissions : [],
       indexed: new Date(indexed),
-      processed: processed ? new Date(processed) : null,
-      mlprocessed: mlprocessed ? new Date(mlprocessed) : null,
+      processed: (processed instanceof Object) ? processed : {},
       flags: (flags instanceof Object) ? flags : {},
       stats: (stats instanceof Object) ? stats : {},
-      _processingFlags: (_processingFlags instanceof Object) ? _processingFlags : {}
+      _processingFlags: (_processingFlags instanceof Array) ? _processingFlags : []
     }
   }
 
@@ -70,34 +68,11 @@ module.exports = class Photo extends _processing {
       } else {
         const inserted = docs.map((doc, i) => ({ id: ret[i], path: doc.path }))
         await Promise.all(inserted.map(photo => this.processorQueue.add(this.host, photo)))
-        await this._processingFlags(ret, { processing: true })
         console.log(`processQueue.add(${inserted.length} photos)`)
       }
     }
     if (returnOne) return ret[0]
     else return ret
-  }
-
-  async fullRemove (query) {
-    if (this.thumbnailCache) {
-      const deleted = await this.find(query, Photo.projections.thumbnails)
-      for (const doc of deleted) {
-        for (const tnType in doc.thumbnails) {
-          await this.thumbnailCache.remove(doc.id, [tnType, 'jpg'])
-        }
-      }
-    }
-    await this.deleteMany(query)
-  }
-
-  async getServedFromId (id, size = 'original') {
-    if (size === 'original') {
-      return await this.findOne(id, Photo.projections.serve)
-    } else {
-      const serve = await this.findOne(id, Photo.projections.thumbnails)
-      if (!serve || (typeof serve.thumbnails !== 'object') || !(size in serve.thumbnails)) return null
-      else return { id, path: serve.thumbnails[size].path, fileName: serve.fileName }
-    }
   }
 
   async children (userId, parentId, projection = Photo.projections.default) {
@@ -131,62 +106,5 @@ module.exports = class Photo extends _processing {
       }
     }
     return { insert, update, remain, remove }
-  }
-
-  /*
-  static publicTransform (doc, details = 'basic', { includeId = true, includeUser = true } = {}) {
-    if (typeof doc !== 'object') return doc
-    delete doc._id
-    delete doc.path
-    delete doc.permissions
-    delete doc.stats
-    delete doc._processingFlags
-    delete doc.hash
-    // id
-    if (!includeId) {
-      delete doc.id
-    }
-    // user
-    if (!includeUser) {
-      delete doc.userId
-      delete doc.userName
-    }
-    // thumbnails
-    if (typeof doc.thumbnails === 'object') {
-      if (['basic', 'minimal'].includes(details)) {
-        doc.thumbnails = Object.keys(doc.thumbnails)
-      } else {
-        for (const size in doc.thumbnails) {
-          delete doc.thumbnails[size].path
-        }
-      }
-    }
-    // dimensions
-    if (typeof doc.dimensions === 'object') {
-      if (['basic', 'minimal'].includes(details)) {
-        delete doc.dimensions.mpx
-        delete doc.dimensions.aspectRatio
-        delete doc.dimensions.channels
-        delete doc.dimensions.density
-        delete doc.dimensions.hasAlpha
-      }
-    }
-    //
-    doc._details = details
-    return doc
-  }
-  */
-
-  static async removeThumbsnails (ids = [], thumbDir = '', thumbTypes = [], extension = '.jpg') {
-    const isArray = (ids instanceof Array)
-    if (!isArray) ids = [ids]
-    await Promise.all(ids.map(id =>
-      Promise.all(thumbTypes.map(tnType => {
-        const tnPath = pathlib.join(thumbDir, tnType, id + extension)
-        return fs.promises.access(tnPath)
-          .then(() => fs.promises.unlink(tnPath))
-          .catch(() => {})
-      }))
-    )).catch(console.error)
   }
 }

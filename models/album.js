@@ -24,9 +24,9 @@ module.exports = class Album extends _processing {
     id = null, userId, albumId, parentId, path, name, fileName,
     created, modified,
     permissions = [],
-    indexed = new Date(), processed = null, mlprocessed = null,
+    indexed = new Date(), processed = {},
     flags = {}, stats = {},
-    _processingFlags = {}
+    _processingFlags = []
   }, { getStats = false }) {
     if (getStats) {
       const stat = await fs.promises.stat(path)
@@ -45,11 +45,10 @@ module.exports = class Album extends _processing {
       modified: new Date(modified) || null,
       permissions: (permissions instanceof Array) ? permissions : [],
       indexed: new Date(indexed),
-      processed: processed ? new Date(processed) : new Date(indexed),
-      mlprocessed: mlprocessed ? new Date(mlprocessed) : (processed ? new Date(processed) : new Date(indexed)),
+      processed: (processed instanceof Object) ? processed : {},
       flags: (flags instanceof Object) ? flags : {},
       stats: (stats instanceof Object) ? stats : {},
-      _processingFlags: (_processingFlags instanceof Object) ? _processingFlags : {}
+      _processingFlags: (_processingFlags instanceof Array) ? _processingFlags : []
     }
   }
 
@@ -58,7 +57,7 @@ module.exports = class Album extends _processing {
   }
 
   async getServedFromId (id, writeStream = null, { type = 'zip', statConcurrency = 2, level = 0 } = {}) {
-    const serve = await this.findOne(id, Album.projections.serve)
+    const serve = await this.findOne(id, Album.projections.serve())
     if (!serve) return null
     // archive
     const archive = archiver(type, {
@@ -113,27 +112,4 @@ module.exports = class Album extends _processing {
     }
     return { insert, update, remain, remove }
   }
-
-  /*
-  static publicTransform (doc, details = 'basic', { includeId = true, includeUser = true } = {}) {
-    if (typeof doc !== 'object') return doc
-    delete doc._id
-    delete doc.path
-    delete doc.permissions
-    delete doc.stats
-    delete doc._processingFlags
-    // id
-    if (!includeId) {
-      delete doc.id
-    }
-    // user
-    if (!includeUser) {
-      delete doc.userId
-      delete doc.userName
-    }
-    //
-    doc._details = details
-    return doc
-  }
-  */
 }

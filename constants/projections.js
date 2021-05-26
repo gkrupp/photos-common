@@ -1,6 +1,4 @@
 
-const _default = { _id: 0, id: 1 }
-
 const chunks = {
   ids: ({ includeId = true } = {}) => {
     const ret = { _id: 0 }
@@ -13,8 +11,7 @@ const chunks = {
   }),
   processing: () => ({
     indexed: 1,
-    processed: 1,
-    mlprocessed: 1
+    processed: 1
   }),
   naming: () => ({
     name: 1,
@@ -24,6 +21,7 @@ const chunks = {
     width: '$dimensions.width',
     height: '$dimensions.height'
   }),
+  /*
   thumbnails: () => ({
     thumbnails: {
       $arrayToObject: {
@@ -37,6 +35,7 @@ const chunks = {
       }
     }
   }),
+  */
   meta: () => ({
     dimensions: 1,
     exif: 1
@@ -57,13 +56,24 @@ const users = {}
 
 const items = {
   all: {},
-  default: { ..._default },
-  id: { ..._default },
-  physical: { ..._default, userId: 1, parentId: 1, path: 1, ...chunks.naming(), size: 1, ...chunks.createmod() },
-  serve: { ..._default, path: 1, fileName: 1, permissions: 1 }
+  // default: { ..._default },
+  // id: { ..._default },
+  // physical: { ..._default, userId: 1, parentId: 1, path: 1, ...chunks.naming(), size: 1, ...chunks.createmod() },
+  processor: (opt) => ({
+    ...chunks.ids(opt),
+    path: 1
+  }),
+  serve: (opt) => ({
+    ...chunks.ids(opt),
+    path: 1,
+    fileName: 1,
+    permissions: 1,
+    ...chunks.wh(opt)
+  })
 }
 
 const albums = {
+  ...items,
   apiAll: (opt = {}) => ({
     ...chunks.ids(opt),
     userId: 1,
@@ -85,11 +95,11 @@ const albums = {
     ...chunks.ids(opt),
     name: 1,
     created: 1
-  }),
-  ...items
+  })
 }
 
 const photos = {
+  ...items,
   apiAll: (opt = {}) => ({
     ...chunks.ids(opt),
     userId: 1,
@@ -121,10 +131,7 @@ const photos = {
     created: 1,
     ...chunks.wh(opt),
     ...chunks.thumbnails(opt)
-  }),
-  processor: { ..._default, path: 1 },
-  thumbnails: { ..._default, thumbnails: 1, fileName: 1 },
-  ...items
+  })
 }
 
 module.exports = {

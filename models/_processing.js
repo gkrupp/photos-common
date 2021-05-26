@@ -10,32 +10,18 @@ class _processing {
   static get aggregations () { return {} }
   static get defaultRetries () { return 3 }
   static get defaultGenid () { return nanoid }
-  static get canProcess () {
+  static canProcess (pipes = null) {
+    if (!(pipes instanceof Array)) {
+      if (typeof pipes === 'string') pipes = [pipes]
+      else pipes = []
+    }
+    pipes = pipes.map((pipe) => ({
+      [`processed.${pipe}.date`]: { $not: { $type: 'date' } }
+    }))
     return {
-      $and: [{
-        $or: [
-          { '_processingFlags.processing': { $exists: false } },
-          { '_processingFlags.processing': false }
-        ]
-      }, {
-        $or: [
-          { '_processingFlags.mlprocessing': { $exists: false } },
-          { '_processingFlags.mlprocessing': false }
-        ]
-      }
-      /*
-      , {
-        $or: [
-          { '_processingFlags.processingError': { $exists: false } },
-          { '_processingFlags.processingError': null }
-        ]
-      }, {
-        $or: [
-          { '_processingFlags.mlprocessingError': { $exists: false } },
-          { '_processingFlags.mlprocessingError': null }
-        ]
-      }
-      */
+      $and: [
+        { _processingFlags: { $nin: ['@scan', /^@processing(\/.+)?$/] } },
+        ...pipes
       ]
     }
   }
@@ -158,8 +144,7 @@ class _processing {
   }
 
   async updateEventStat (id, event = 'served', target = null, change = 1, last = new Date(), statField = 'stats') {
-    // event:  [ served, searched ]
-    // target: [ original ]
+    // event:  [ served, cacheServed ]
     // increments
     const incs = {}
     const incField = (target)
@@ -172,30 +157,37 @@ class _processing {
     const setField = (target)
       ? [statField, lastField, target].join('.')
       : [statField, lastField].join('.')
-    sets[setField] = new Date()
+    sets[setField] = last
     // update
     const isArray = (id instanceof Array)
     if (!isArray) return this.coll.updateOne({ id }, { $inc: incs, $set: sets })
     else return this.coll.updateMany({ id: { $in: id } }, { $inc: incs, $set: sets })
   }
 
-  async _processingFlags (query, flags) {
-    flags = _processing.convertFlags(flags, '_processingFlags')
+  async pushProcessingFlags (query, ...flags) {
+    // query preprocessing
     if (typeof query === 'string') {
       query = { id: query }
     } else if (query instanceof Array) {
       query = { id: { $in: query } }
     }
-    return (await this.coll.updateMany(query, { $set: flags })).result.nModified
+    // update
+    return (await this.coll.updateMany(query, {
+      $addToSet: { _processingFlags: { $each: flags.flat() } }
+    })).result.nModified
   }
 
-  static convertFlags (flags, baseField = '_processingFlags') {
-    const query = {}
-    for (const name in flags) {
-      const field = [baseField, name].join('.')
-      query[field] = flags[name]
+  async popProcessingFlags (query, ...flags) {
+    // query preprocessing
+    if (typeof query === 'string') {
+      query = { id: query }
+    } else if (query instanceof Array) {
+      query = { id: { $in: query } }
     }
-    return query
+    // update
+    return (await this.coll.updateMany(query, {
+      $pullAll: { _processingFlags: flags.flat() }
+    })).result.nModified
   }
 }
 

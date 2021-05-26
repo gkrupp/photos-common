@@ -15,6 +15,7 @@ async function init ({ redis, limiter }) {
 }
 async function stop () {
   for (const name in queues) {
+    await queues[name].pause()
     await queues[name].close()
   }
 }
