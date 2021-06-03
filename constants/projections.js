@@ -21,26 +21,12 @@ const chunks = {
     width: '$dimensions.width',
     height: '$dimensions.height'
   }),
-  /*
-  thumbnails: () => ({
-    thumbnails: {
-      $arrayToObject: {
-        $map: {
-          input: { $objectToArray: '$thumbnails' },
-          in: {
-            k: '$$this.k',
-            v: ['$$this.v.width', '$$this.v.height']
-          }
-        }
-      }
-    }
-  }),
-  */
   meta: () => ({
     dimensions: 1,
     exif: 1
   }),
   ml: () => ({
+    /*
     colors: {
       palette: '$colors.palette.rgb',
       prominent: '$colors.prominent.rgb'
@@ -49,10 +35,27 @@ const chunks = {
       preds: 1,
       labels: 1
     }
+    */
   })
 }
 
-const users = {}
+const users = {
+  apiAll: (opt = {}) => ({
+    ...chunks.ids(opt),
+    userName: 1,
+    displayName: 1
+  }),
+  apiDefault: (opt = {}) => ({
+    ...chunks.ids(opt),
+    userName: 1,
+    displayName: 1
+  }),
+  apiMinimal: (opt = {}) => ({
+    ...chunks.ids(opt),
+    userName: 1,
+    displayName: 1
+  })
+}
 
 const items = {
   all: {},
@@ -112,7 +115,6 @@ const photos = {
     ...chunks.processing(opt),
     flags: 1,
     ...chunks.wh(opt),
-    ...chunks.thumbnails(opt),
     ...chunks.meta(opt),
     ...chunks.ml(opt)
   }),
@@ -122,15 +124,13 @@ const photos = {
     name: 1,
     created: 1,
     flags: 1,
-    ...chunks.wh(opt),
-    ...chunks.thumbnails(opt)
+    ...chunks.wh(opt)
   }),
   apiMinimal: (opt = {}) => ({
     ...chunks.ids(opt),
     name: 1,
     created: 1,
-    ...chunks.wh(opt),
-    ...chunks.thumbnails(opt)
+    ...chunks.wh(opt)
   })
 }
 

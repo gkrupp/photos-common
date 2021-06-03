@@ -10,7 +10,6 @@ const _processing = require('./_processing')
 module.exports = class Photo extends _processing {
   constructor (coll, { host = '*', processorQueue = null } = {}) {
     super(coll)
-    this.coll = coll
     this.host = host
     this.processorQueue = processorQueue
   }

@@ -39,6 +39,18 @@ const modifierGroup = {
   ]
 }
 
+const users = {
+  apiAll: (opt = {}) => [
+    { $project: projections.users.apiAll(opt) }
+  ],
+  apiDefault: (opt = {}) => [
+    { $project: projections.users.apiDefault(opt) }
+  ],
+  apiMinimal: (opt = {}) => [
+    { $project: projections.users.apiMinimal(opt) }
+  ]
+}
+
 const albums = {
   apiAll: (opt = {}) => [
     { $project: projections.albums.apiAll(opt) },
@@ -71,6 +83,7 @@ const photos = {
 
 module.exports = {
   modifiers,
+  users,
   albums,
   photos
 }

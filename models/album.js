@@ -10,11 +10,6 @@ const aggregations = require('../constants/aggregations')
 const _processing = require('./_processing')
 
 module.exports = class Album extends _processing {
-  constructor (coll) {
-    super(coll)
-    this.coll = coll
-  }
-
   static get projections () { return projections.albums }
   static get aggregations () { return aggregations.albums }
   static get defaultGenid () { return () => nanoid(64) }
