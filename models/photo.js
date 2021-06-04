@@ -16,7 +16,7 @@ module.exports = class Photo extends _processing {
 
   static get projections () { return projections.photos }
   static get aggregations () { return aggregations.photos }
-  static get allowedFileTypes () { return ['.jpg', '.jpeg', '.heic'] }
+  static get allowedFileTypes () { return ['.jpg', '.jpeg'] }
   static get defaultGenid () { return () => nanoid(128) }
   static validateId (id) { return (typeof id === 'string' && id.length === 128) }
 
