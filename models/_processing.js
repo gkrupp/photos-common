@@ -83,6 +83,7 @@ class _processing {
 
   async aggregateOne (query, pipeline = []) {
     let res
+    console.error(query)
     if (query === null) {
       res = await this.coll.aggregate(pipeline).toArray()
     } else {
