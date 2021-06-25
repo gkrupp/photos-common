@@ -120,15 +120,17 @@ class _processing {
     throw new Error(`Album creation has been failed. (${insertedIds.length}/${n})`)
   }
 
-  async updateOne (filter, update) {
-    return (await this.coll.updateOne(filter, update)).result.nModified
+  async updateOne (query, update) {
+    if (typeof query === 'string') query = { id: query }
+    return (await this.coll.updateOne(query, update)).result.nModified
   }
 
-  async updateMany (filter, update) {
-    return (await this.coll.updateMany(filter, update)).result.nModified
+  async updateMany (query, update) {
+    return (await this.coll.updateMany(query, update)).result.nModified
   }
 
   async deleteOne (query) {
+    if (typeof query === 'string') query = { id: query }
     return (await this.coll.deleteOne(query)).deletedCount
   }
 
