@@ -83,10 +83,10 @@ class _processing {
 
   async aggregateOne (query, pipeline = []) {
     let res
-    console.error(query)
     if (query === null) {
       res = await this.coll.aggregate(pipeline).toArray()
     } else {
+      console.error([{ $match: query }, ...pipeline])
       res = await this.coll.aggregate([{ $match: query }, ...pipeline]).toArray()
     }
     if (res) return res[0]
