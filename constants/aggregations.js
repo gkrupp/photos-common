@@ -80,7 +80,8 @@ const photos = {
     ...modifierGroup.sortSkipLimit(opt)
   ],
   albumSize: (opt = {}) => [
-    { $group: { _id: '', size: { $sum: '$size' } } }
+    { $match: { parentId: opt.parentId } },
+    { $group: { _id: '$parentId', size: { $sum: '$size' } } }
   ]
 }
 
