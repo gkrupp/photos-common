@@ -86,8 +86,9 @@ class _processing {
     if (query === null) {
       res = await this.coll.aggregate(pipeline).toArray()
     } else {
-      console.error([{ $match: query }, ...pipeline])
+      console.error(JSON.stringify([{ $match: query }, ...pipeline]))
       res = await this.coll.aggregate([{ $match: query }, ...pipeline]).toArray()
+      console.log(res)
     }
     if (res) return res[0]
     else return null
