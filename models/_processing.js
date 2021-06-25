@@ -53,15 +53,15 @@ class _processing {
     }
   }
 
-  async findOne (filter, projection) {
-    if (typeof filter === 'string') filter = { id: filter }
-    return this.coll.findOne(filter, { projection })
+  async findOne (query, projection) {
+    if (typeof query === 'string') query = { id: query }
+    return this.coll.findOne(query, { projection })
   }
 
-  async find (filter, projection, { sort = null, skip = null, limit = null, toArray = true, count = false } = {}) {
-    if (typeof filter === 'string') return this.findOne(filter, projection)
-    if (filter instanceof Array) filter = { id: { $id: filter } }
-    const res = this.coll.find(filter, { projection })
+  async find (query, projection, { sort = null, skip = null, limit = null, toArray = true, count = false } = {}) {
+    if (typeof query === 'string') return this.findOne(query, projection)
+    if (query instanceof Array) query = { id: { $id: query } }
+    const res = this.coll.find(query, { projection })
     if (count) return res.count()
     if (sort) res.sort(sort)
     if (skip) res.skip(skip)
@@ -87,9 +87,8 @@ class _processing {
       res = await this.coll.aggregate(pipeline).toArray()
     } else {
       res = await this.coll.aggregate([{ $match: query }, ...pipeline]).toArray()
-      console.log(res)
     }
-    if (res) return res[0]
+    if (res && res.length > 0) return res[0]
     else return null
   }
 

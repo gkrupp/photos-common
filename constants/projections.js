@@ -60,7 +60,10 @@ const users = {
 const items = {
   all: {},
   // default: { ..._default },
-  // id: { ..._default },
+  path: (opt) => ({
+    ...chunks.ids(opt),
+    path: 1
+  }),
   physical: (opt) => ({
     ...chunks.ids(opt),
     parentId: 1,

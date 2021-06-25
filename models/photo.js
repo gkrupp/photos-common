@@ -56,6 +56,10 @@ module.exports = class Photo extends _processing {
     }
   }
 
+  async getPathPrefixSize (pathPrefix = null) {
+    return (await this.aggregateOne({ path: RegExp(`^${pathPrefix}/`) }, Photo.aggregations.totalSize()))?.size || null
+  }
+
   async insert (docs = [], { returnOne = false, process = true } = {}) {
     const isArray = (docs instanceof Array)
     if (isArray && docs.length === 0) return []

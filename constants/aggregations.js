@@ -79,9 +79,8 @@ const photos = {
     { $project: projections.photos.apiMinimal(opt) },
     ...modifierGroup.sortSkipLimit(opt)
   ],
-  albumSize: (opt = {}) => [
-    { $match: { parentId: opt.parentId } },
-    { $group: { _id: '$parentId', size: { $sum: '$size' } } }
+  totalSize: (opt = {}) => [
+    { $group: { _id: '', size: { $sum: '$size' } } }
   ]
 }
 
