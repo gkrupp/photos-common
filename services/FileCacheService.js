@@ -3,11 +3,12 @@ const fs = require('fs')
 const pathlib = require('path')
 
 class FileCacheManager {
-  constructor ({ root = './.cache', levels = 0, init = true, expire = 0 } = {}) {
+  constructor ({ root = './.cache', levels = 0, init = true, expire = 0, onInitError = null } = {}) {
     this.root = pathlib.resolve(root)
     this.levels = levels
     this.expire = expire
     this.interval = null
+    this.onInitError = onInitError || (() => console.error('FileCache init error.'))
 
     if (init) this.__init()
     if (expire) {
@@ -72,8 +73,12 @@ class FileCacheManager {
   }
 
   __init () {
-    if (!fs.existsSync(this.root)) {
-      fs.mkdirSync(this.root)
+    try {
+      if (!fs.existsSync(this.root)) {
+        fs.mkdirSync(this.root)
+      }
+    } catch (err) {
+      this.onInitError(err)
     }
   }
 

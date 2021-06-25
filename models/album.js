@@ -17,6 +17,7 @@ module.exports = class Album extends _processing {
 
   static async newDocument ({
     id = null, userId, albumId, parentId, path, name, fileName,
+    size,
     created, modified,
     permissions = [],
     indexed = new Date(), processed = {},
@@ -36,6 +37,7 @@ module.exports = class Album extends _processing {
       path: (typeof path === 'string') ? path : null,
       name: ((typeof name === 'string') ? name : null) || ((typeof fileName === 'string') ? fileName : null) || ((typeof path === 'string') ? path.match(/([^/]*)\/*$/)[1] : null),
       fileName: ((typeof fileName === 'string') ? fileName : null) || ((typeof path === 'string') ? pathlib.basename(path) : null),
+      size: Number(size) || null,
       created: new Date(created) || null,
       modified: new Date(modified) || null,
       permissions: (permissions instanceof Array) ? permissions : [],
@@ -46,6 +48,10 @@ module.exports = class Album extends _processing {
       _processingFlags: (_processingFlags instanceof Array) ? _processingFlags : []
     }
   }
+
+  // async updateSize (id, delta = 0) {
+  //   return this.coll.updateOne({ id }, { $inc: { size: delta } })
+  // }
 
   async children (userId, parentId, projection = Album.projections.default) {
     return this.coll.find({ userId, parentId }, { projection }).toArray()

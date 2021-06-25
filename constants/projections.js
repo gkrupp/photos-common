@@ -61,7 +61,14 @@ const items = {
   all: {},
   // default: { ..._default },
   // id: { ..._default },
-  // physical: { ..._default, userId: 1, parentId: 1, path: 1, ...chunks.naming(), size: 1, ...chunks.createmod() },
+  physical: (opt) => ({
+    ...chunks.ids(opt),
+    parentId: 1,
+    path: 1,
+    ...chunks.naming(opt),
+    size: 1,
+    ...chunks.createmod(opt)
+  }),
   processor: (opt) => ({
     ...chunks.ids(opt),
     path: 1

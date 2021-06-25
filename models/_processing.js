@@ -71,13 +71,23 @@ class _processing {
   }
 
   async aggregate (query, pipeline = [], { toArray = true } = {}) {
-    const res = this.coll.aggregate([{ $match: query }, ...pipeline])
+    let res
+    if (query === null) {
+      res = this.coll.aggregate(pipeline)
+    } else {
+      res = this.coll.aggregate([{ $match: query }, ...pipeline])
+    }
     if (toArray) return res.toArray()
     return res
   }
 
   async aggregateOne (query, pipeline = []) {
-    const res = await this.coll.aggregate([{ $match: query }, ...pipeline]).toArray()
+    let res
+    if (query === null) {
+      res = await this.coll.aggregate(pipeline).toArray()
+    } else {
+      res = await this.coll.aggregate([{ $match: query }, ...pipeline]).toArray()
+    }
     if (res) return res[0]
     else return null
   }
