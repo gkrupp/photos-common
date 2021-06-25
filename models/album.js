@@ -49,9 +49,9 @@ module.exports = class Album extends _processing {
     }
   }
 
-  // async updateSize (id, delta = 0) {
-  //   return this.coll.updateOne({ id }, { $inc: { size: delta } })
-  // }
+  async updateSize (id, delta = 0) {
+    return this.coll.updateOne({ id }, { $inc: { size: delta } })
+  }
 
   async children (userId, parentId, projection = Album.projections.default) {
     return this.coll.find({ userId, parentId }, { projection }).toArray()

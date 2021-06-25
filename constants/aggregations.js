@@ -63,9 +63,6 @@ const albums = {
   apiMinimal: (opt = {}) => [
     { $project: projections.albums.apiMinimal(opt) },
     ...modifierGroup.sortSkipLimit(opt)
-  ],
-  totalSize: (opt = {}) => [
-    { $group: { _id: '', size: { $sum: '$size' } } }
   ]
 }
 
@@ -81,6 +78,9 @@ const photos = {
   apiMinimal: (opt = {}) => [
     { $project: projections.photos.apiMinimal(opt) },
     ...modifierGroup.sortSkipLimit(opt)
+  ],
+  albumSize: (opt = {}) => [
+    { $group: { _id: '', size: { $sum: '$size' } } }
   ]
 }
 
