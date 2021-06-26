@@ -21,21 +21,18 @@ const chunks = {
     width: '$dimensions.width',
     height: '$dimensions.height'
   }),
+  shade: () => ({
+    shade: { $arrayElemAt: ['$colors.dominant.hex', 0] }
+  }),
   meta: () => ({
     dimensions: 1,
     exif: 1
   }),
-  ml: () => ({
-    /*
+  features: () => ({
     colors: {
-      palette: '$colors.palette.rgb',
-      prominent: '$colors.prominent.rgb'
-    },
-    objects: {
-      preds: 1,
-      labels: 1
+      dominant: '$colors.dominant.hex',
+      prominent: '$colors.prominent.hex'
     }
-    */
   })
 }
 
@@ -125,8 +122,9 @@ const photos = {
     ...chunks.processing(opt),
     flags: 1,
     ...chunks.wh(opt),
+    ...chunks.shade(opt),
     ...chunks.meta(opt),
-    ...chunks.ml(opt)
+    ...chunks.features(opt)
   }),
   apiDefault: (opt = {}) => ({
     ...chunks.ids(opt),
@@ -134,7 +132,8 @@ const photos = {
     name: 1,
     created: 1,
     flags: 1,
-    ...chunks.wh(opt)
+    ...chunks.wh(opt),
+    ...chunks.shade(opt)
   }),
   apiMinimal: (opt = {}) => ({
     ...chunks.ids(opt),

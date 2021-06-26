@@ -71,7 +71,7 @@ module.exports = class Photo extends _processing {
       } else {
         const inserted = docs.map((doc, i) => ({ id: ret[i], path: doc.path }))
         await Promise.all(inserted.map(photo => this.processorQueue.add(this.host, photo)))
-        console.log(`processQueue.add(${inserted.length} photos)`)
+        console.log(`processorQueue.add(${inserted.length} photos)`)
       }
     }
     if (returnOne) return ret[0]
