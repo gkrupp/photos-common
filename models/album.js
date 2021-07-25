@@ -12,8 +12,9 @@ const _processing = require('./_processing')
 module.exports = class Album extends _processing {
   static get projections () { return projections.albums }
   static get aggregations () { return aggregations.albums }
-  static get defaultGenid () { return () => nanoid(64) }
-  static validateId (id) { return (typeof id === 'string' && id.length === 64) }
+  static get idLength () { return 32 }
+  static get defaultGenid () { return () => nanoid(this.idLength) }
+  static validateId (id) { return (typeof id === 'string' && id.length === this.idLength) }
 
   static async newDocument ({
     id = null, userId, albumId, parentId, path, name, fileName,

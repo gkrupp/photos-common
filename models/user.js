@@ -8,8 +8,9 @@ const _processing = require('./_processing')
 module.exports = class User extends _processing {
   static get projections () { return projections.users }
   static get aggregations () { return aggregations.users }
-  static get defaultGenid () { return () => nanoid(32) }
-  static validateId (id) { return (typeof id === 'string' && id.length === 32) }
+  static get idLength () { return 16 }
+  static get defaultGenid () { return () => nanoid(this.idLength) }
+  static validateId (id) { return (typeof id === 'string' && id.length === this.idLength) }
 
   static async newDocument ({
     id = null,

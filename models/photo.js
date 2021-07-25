@@ -17,8 +17,9 @@ module.exports = class Photo extends _processing {
   static get projections () { return projections.photos }
   static get aggregations () { return aggregations.photos }
   static get allowedFileTypes () { return ['.jpg', '.jpeg'] }
-  static get defaultGenid () { return () => nanoid(128) }
-  static validateId (id) { return (typeof id === 'string' && id.length === 128) }
+  static get idLength () { return 64 }
+  static get defaultGenid () { return () => nanoid(this.idLength) }
+  static validateId (id) { return (typeof id === 'string' && id.length === this.idLength) }
 
   static async newDocument ({
     id = null, userId, albumId, parentId, path, name, fileName,
