@@ -17,6 +17,9 @@ const chunks = {
     name: 1,
     fileName: 1
   }),
+  ar: () => ({
+    ar: '$dimensions.aspectRatio'
+  }),
   wh: () => ({
     width: '$dimensions.width',
     height: '$dimensions.height'
@@ -121,7 +124,7 @@ const photos = {
     permissions: 1,
     ...chunks.processing(opt),
     flags: 1,
-    ...chunks.wh(opt),
+    ...chunks.ar(opt),
     ...chunks.shade(opt),
     ...chunks.meta(opt),
     ...chunks.features(opt)
@@ -132,14 +135,12 @@ const photos = {
     name: 1,
     created: 1,
     flags: 1,
-    ...chunks.wh(opt),
+    ...chunks.ar(opt),
     ...chunks.shade(opt)
   }),
   apiMinimal: (opt = {}) => ({
     ...chunks.ids(opt),
-    name: 1,
-    created: 1,
-    ...chunks.wh(opt)
+    ...chunks.ar(opt)
   })
 }
 
