@@ -16,7 +16,7 @@ module.exports = class Photo extends _processing {
 
   static get projections () { return projections.photos }
   static get aggregations () { return aggregations.photos }
-  static get allowedFileTypes () { return ['.jpg', '.jpeg'] }
+  static get allowedFileTypes () { return ['.jpg', '.jpeg', '.png', '.webp'] }
   static get idLength () { return 64 }
   static get defaultGenid () { return () => nanoid(this.idLength) }
   static validateId (id) { return (typeof id === 'string' && id.length === this.idLength) }
@@ -57,8 +57,14 @@ module.exports = class Photo extends _processing {
     }
   }
 
-  async getPathPrefixSize (pathPrefix = null) {
-    return (await this.aggregateOne({ path: RegExp(`^${pathPrefix}/`) }, Photo.aggregations.totalSize()))?.size || null
+  async getPathPrefixInfo (pathPrefix = null, tailingSlash = false) {
+    pathPrefix = pathPrefix
+      .replace(/\//g, '\\/')
+      .replace(/ /g, '\\s')
+    if (!tailingSlash) {
+      pathPrefix += '\\/'
+    }
+    return this.aggregateOne({ path: RegExp(`^${pathPrefix}`) }, Photo.aggregations.pathPrefixInfo()) || null
   }
 
   async insert (docs = [], { returnOne = false, process = true } = {}) {

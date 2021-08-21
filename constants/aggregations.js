@@ -79,6 +79,17 @@ const photos = {
     { $project: projections.photos.apiMinimal(opt) },
     ...modifierGroup.sortSkipLimit(opt)
   ],
+  pathPrefixInfo: (opt = {}) => [
+    {
+      $group: {
+        _id: '',
+        timeSpanBegin: { $min: '$exif.CreateDate' },
+        timeSpanEnd: { $max: '$exif.CreateDate' },
+        albumSize: { $sum: '$size' }
+      }
+    },
+    { $project: { _id: 0 } }
+  ],
   totalSize: (opt = {}) => [
     { $group: { _id: '', size: { $sum: '$size' } } }
   ]
