@@ -85,7 +85,7 @@ const photos = {
         _id: '',
         timeSpanBegin: { $min: '$exif.CreateDate' },
         timeSpanEnd: { $max: '$exif.CreateDate' },
-        albumSize: { $sum: '$size' }
+        size: { $sum: '$size' }
       }
     },
     { $project: { _id: 0 } }
