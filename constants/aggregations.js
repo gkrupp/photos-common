@@ -83,8 +83,8 @@ const photos = {
     {
       $group: {
         _id: '',
-        timeSpanBegin: { $min: '$exif.CreateDate' },
-        timeSpanEnd: { $max: '$exif.CreateDate' },
+        spanBegin: { $min: '$created' },
+        spanEnd: { $max: '$created' },
         size: { $sum: '$size' }
       }
     },
