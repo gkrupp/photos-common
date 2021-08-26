@@ -1,7 +1,7 @@
 
 const projections = require('./projections')
 
-const allowedSortingFields = ['name', 'created', 'modified', 'fileName']
+const allowedSortingFields = ['name', 'created', 'modified']
 
 const modifiers = {
   sort: ({ sort = 'created:1' } = {}) => {

@@ -17,8 +17,8 @@ module.exports = class Album extends _processing {
   static validateId (id) { return (typeof id === 'string' && id.length === this.idLength) }
 
   static async newDocument ({
-    id = null, userId, albumId, parentId, path, name, fileName,
-    created, modified,
+    id = null, userId, albumId,
+    path, name, created, modified,
     permissions = [],
     indexed = new Date(), processed = {},
     flags = {}, stats = {},
@@ -30,16 +30,18 @@ module.exports = class Album extends _processing {
       modified = stat.mtime
     }
     return {
+      // ids
       id: (typeof id === 'string') ? id : null,
       userId: (typeof userId === 'string') ? userId : null,
-      albumId: (typeof albumId === 'string') ? albumId : (typeof parentId === 'string') ? parentId : null,
-      parentId: (typeof parentId === 'string') ? parentId : null,
+      albumId: (typeof albumId === 'string') ? albumId : null,
+      // physical
       path: (typeof path === 'string') ? path : null,
-      name: ((typeof name === 'string') ? name : null) || ((typeof fileName === 'string') ? fileName : null) || ((typeof path === 'string') ? path.match(/([^/]*)\/*$/)[1] : null),
-      fileName: ((typeof fileName === 'string') ? fileName : null) || ((typeof path === 'string') ? pathlib.basename(path) : null),
+      name: ((typeof name === 'string') ? name : null) || ((typeof path === 'string') ? pathlib.basename(path) : null),
       created: new Date(created) || null,
       modified: new Date(modified) || null,
+      // ownership
       permissions: (permissions instanceof Array) ? permissions : [],
+      // proc
       indexed: new Date(indexed),
       processed: (processed instanceof Object) ? processed : {},
       flags: (flags instanceof Object) ? flags : {},
@@ -48,8 +50,8 @@ module.exports = class Album extends _processing {
     }
   }
 
-  async children (userId, parentId, projection = Album.projections.default) {
-    return this.coll.find({ userId, parentId }, { projection }).toArray()
+  async children (userId, albumId, projection = Album.projections.default) {
+    return this.coll.find({ userId, albumId }, { projection }).toArray()
   }
 
   async getServedFromId (id, writeStream = null, { type = 'zip', statConcurrency = 2, level = 0 } = {}) {
@@ -67,7 +69,7 @@ module.exports = class Album extends _processing {
     archive.on('error', (err) => {
       throw err
     })
-    archive.directory(serve.path, serve.fileName)
+    archive.directory(serve.path, serve.name)
     if (writeStream) {
       archive.pipe(writeStream)
       await archive.finalize()
@@ -92,7 +94,7 @@ module.exports = class Album extends _processing {
         insert.push(album)
         continue
       // remain
-      } else if (dbAlbum.parentId === album.parentId) {
+      } else if (dbAlbum.albumId === album.albumId) {
         album.id = dbAlbum.id
         remain.push(dbAlbum.id)
         continue
@@ -101,7 +103,7 @@ module.exports = class Album extends _processing {
         album.id = dbAlbum.id
         update.push({
           id: album.id,
-          update: { parentId: album.parentId }
+          update: { albumId: album.albumId }
         })
         continue
       }

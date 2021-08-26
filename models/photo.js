@@ -16,15 +16,15 @@ module.exports = class Photo extends _processing {
 
   static get projections () { return projections.photos }
   static get aggregations () { return aggregations.photos }
-  static get allowedFileTypes () { return ['.jpg', '.jpeg', '.png', '.webp'] }
+  static get allowedFileTypes () { return ['.jpg', '.jpeg', '.png'] }
   static get idLength () { return 64 }
   static get defaultGenid () { return () => nanoid(this.idLength) }
   static validateId (id) { return (typeof id === 'string' && id.length === this.idLength) }
 
   static async newDocument ({
-    id = null, userId, albumId, parentId, path, name, fileName,
-    extension, size,
-    created, modified,
+    id = null, userId, albumId,
+    path, name, extension, size,
+    created = null, modified = null,
     permissions = [],
     indexed = new Date(), processed = {},
     flags = {}, stats = {},
@@ -33,22 +33,24 @@ module.exports = class Photo extends _processing {
     if (getStats) {
       const stat = await fs.promises.stat(path)
       size = stat.size
-      created = stat.ctime
-      modified = stat.mtime
+      created = created || stat.ctime
+      modified = modified || stat.mtime
     }
     return {
+      // ids
       id: (typeof id === 'string') ? id : null,
       userId: (typeof userId === 'string') ? userId : null,
-      albumId: (typeof albumId === 'string') ? albumId : (typeof parentId === 'string') ? parentId : null,
-      parentId: (typeof parentId === 'string') ? parentId : null,
+      albumId: (typeof albumId === 'string') ? albumId : null,
+      // physical
       path: (typeof path === 'string') ? path : null,
       name: ((typeof name === 'string') ? name : null) || ((typeof path === 'string') ? pathlib.basename(path) : null),
-      fileName: ((typeof fileName === 'string') ? fileName : null) || ((typeof path === 'string') ? pathlib.basename(path) : null),
       extension: (typeof extension === 'string') ? extension : ((typeof path === 'string') ? pathlib.extname(path).toLowerCase() : null),
       size: Number(size) || null,
-      created: new Date(created) || null,
-      modified: new Date(modified) || null,
+      created: created ? new Date(created) : null,
+      modified: modified ? new Date(modified) : null,
+      // ownership
       permissions: (permissions instanceof Array) ? permissions : [],
+      // proc
       indexed: new Date(indexed),
       processed: (processed instanceof Object) ? processed : {},
       flags: (flags instanceof Object) ? flags : {},
@@ -85,8 +87,8 @@ module.exports = class Photo extends _processing {
     else return ret
   }
 
-  async children (userId, parentId, projection = Photo.projections.default) {
-    return this.coll.find({ userId, parentId }, { projection }).toArray()
+  async children (userId, albumId, projection = Photo.projections.default) {
+    return this.coll.find({ userId, albumId }, { projection }).toArray()
   }
 
   static merge (inDB, inFS) {
@@ -101,7 +103,7 @@ module.exports = class Photo extends _processing {
         insert.push(photo)
         continue
       // remain
-      } else if (dbPhoto.parentId === photo.parentId) {
+      } else if (dbPhoto.albumId === photo.albumId) {
         photo.id = dbPhoto.id
         remain.push(dbPhoto.id)
         continue
@@ -110,7 +112,7 @@ module.exports = class Photo extends _processing {
         photo.id = dbPhoto.id
         update.push({
           query: { id: photo.id },
-          update: { $set: { parentId: photo.parentId, albumId: photo.parentId } }
+          update: { $set: { albumId: photo.albumId } }
         })
         continue
       }

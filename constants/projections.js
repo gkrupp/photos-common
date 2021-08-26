@@ -14,8 +14,7 @@ const chunks = {
     processed: 1
   }),
   naming: () => ({
-    name: 1,
-    fileName: 1
+    name: 1
   }),
   ar: () => ({
     ar: '$dimensions.aspectRatio'
@@ -66,7 +65,7 @@ const items = {
   }),
   physical: (opt) => ({
     ...chunks.ids(opt),
-    parentId: 1,
+    albumId: 1,
     path: 1,
     ...chunks.naming(opt),
     size: 1,
@@ -79,7 +78,7 @@ const items = {
   serve: (opt) => ({
     ...chunks.ids(opt),
     path: 1,
-    fileName: 1,
+    name: 1,
     permissions: 1,
     ...chunks.wh(opt)
   })
