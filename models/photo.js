@@ -24,7 +24,7 @@ module.exports = class Photo extends _processing {
   static async newDocument ({
     id = null, userId, albumId,
     path, name, extension, size,
-    created = null, modified = null,
+    created, modified,
     permissions = [],
     indexed = new Date(), processed = {},
     flags = {}, stats = {},
@@ -46,8 +46,8 @@ module.exports = class Photo extends _processing {
       name: ((typeof name === 'string') ? name : null) || ((typeof path === 'string') ? pathlib.basename(path) : null),
       extension: (typeof extension === 'string') ? extension : ((typeof path === 'string') ? pathlib.extname(path).toLowerCase() : null),
       size: Number(size) || null,
-      created: created ? new Date(created) : null,
-      modified: modified ? new Date(modified) : null,
+      created: created ? new Date(created) : new Date(),
+      modified: modified ? new Date(modified) : new Date(),
       // ownership
       permissions: (permissions instanceof Array) ? permissions : [],
       // proc

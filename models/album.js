@@ -37,8 +37,8 @@ module.exports = class Album extends _processing {
       // physical
       path: (typeof path === 'string') ? path : null,
       name: ((typeof name === 'string') ? name : null) || ((typeof path === 'string') ? pathlib.basename(path) : null),
-      created: new Date(created) || null,
-      modified: new Date(modified) || null,
+      created: created ? new Date(created) : new Date(),
+      modified: modified ? new Date(modified) : new Date(),
       // ownership
       permissions: (permissions instanceof Array) ? permissions : [],
       // proc
