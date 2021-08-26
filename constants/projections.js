@@ -13,9 +13,6 @@ const chunks = {
     indexed: 1,
     processed: 1
   }),
-  naming: () => ({
-    name: 1
-  }),
   ar: () => ({
     ar: '$dimensions.aspectRatio'
   }),
@@ -28,7 +25,11 @@ const chunks = {
   }),
   meta: () => ({
     dimensions: 1,
-    exif: 1
+    exif: 1,
+    location: 1
+  }),
+  location: () => ({
+    location: '$location.coordinates'
   }),
   features: () => ({
     colors: {
@@ -67,7 +68,7 @@ const items = {
     ...chunks.ids(opt),
     albumId: 1,
     path: 1,
-    ...chunks.naming(opt),
+    name: 1,
     size: 1,
     ...chunks.createmod(opt)
   }),
@@ -90,7 +91,7 @@ const albums = {
     ...chunks.ids(opt),
     userId: 1,
     albumId: 1,
-    ...chunks.naming(opt),
+    name: 1,
     ...chunks.createmod(opt),
     permissions: 1,
     ...chunks.processing(opt),
@@ -116,7 +117,7 @@ const photos = {
     ...chunks.ids(opt),
     userId: 1,
     albumId: 1,
-    ...chunks.naming(opt),
+    name: 1,
     extension: 1,
     size: 1,
     ...chunks.createmod(opt),
