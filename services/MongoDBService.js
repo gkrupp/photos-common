@@ -11,7 +11,7 @@ async function init ({ uri, db, options, collections }) {
   if (!connection) throw Error('Unable to connect to database')
   const DB = connection.db(db)
   for (const coll in collections) {
-    colls[coll] = DB.collection(coll)
+    colls[coll] = DB.collection(collections[coll])
   }
   console.log('Database ready')
 }

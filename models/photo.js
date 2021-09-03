@@ -7,6 +7,8 @@ const projections = require('../constants/projections')
 const aggregations = require('../constants/aggregations')
 const _processing = require('./_processing')
 
+const { pathPrefixRegExp } = require('../utils')
+
 module.exports = class Photo extends _processing {
   constructor (coll, { host = '*', processorQueue = null } = {}) {
     super(coll)
@@ -60,13 +62,7 @@ module.exports = class Photo extends _processing {
   }
 
   async getPathPrefixInfo (pathPrefix = null, tailingSlash = false) {
-    pathPrefix = pathPrefix
-      .replace(/\//g, '\\/')
-      .replace(/ /g, '\\s')
-    if (!tailingSlash) {
-      pathPrefix += '\\/'
-    }
-    return this.aggregateOne({ path: RegExp(`^${pathPrefix}`) }, Photo.aggregations.pathPrefixInfo()) || null
+    return this.aggregateOne({ path: pathPrefixRegExp(pathPrefix, tailingSlash) }, Photo.aggregations.pathPrefixInfo()) || null
   }
 
   async insert (docs = [], { returnOne = false, process = true } = {}) {
