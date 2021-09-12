@@ -1,8 +1,4 @@
 
-/*
-coll = {deleteMany () { console.log('dm'); return {deletedCount:2} }, deleteOne () { console.log('do'); return {deletedCount:1} }}
-*/
-
 const { nanoid } = require('nanoid')
 
 class _Item {
@@ -31,26 +27,66 @@ class _Item {
 
   //
 
-  async children (projection) {
-    return this.constructor.children(this.id, projection)
+  async children (projection, { count = false } = {}) {
+    return this.constructor.children(this.id, projection, { count })
   }
+
+  static async children (albumId, projection, { count = false } = {}) {
+    return this.find({ albumId }, projection, { count })
+  }
+
+  /*
+  async getItems (query, opt = {}, { one = false } = {}) {
+    const defaultDetails = 'default'
+    const defaultAggregation = 'apiDefault'
+    const details = (opt.details || defaultDetails).toLowerCase()
+    // aggr
+    let aggr = ['api', details[0].toUpperCase() + details.slice(1)].join('')
+    if (!(aggr in this.constructor.aggregations)) aggr = defaultAggregation
+    const aggrPipe = this.constructor.aggregations[aggr](opt)
+    // exec
+    if (one) return this.aggregateOne(query, aggrPipe)
+    else return this.aggregate(query, aggrPipe)
+  }
+  */
 
   //
 
-  static async children (albumId, projection) {
-    return this.find({ albumId }, { projection })
+  /*
+  async updateEventStat (id, event = 'served', target = null, change = 1, last = new Date(), statField = 'stats') {
+    // event:  [ served, cacheServed ]
+    // increments
+    const incs = {}
+    const incField = (target)
+      ? [statField, event, target].join('.')
+      : [statField, event].join('.')
+    incs[incField] = change
+    // dates
+    const sets = {}
+    const lastField = ['last', event.charAt(0).toUpperCase(), event.slice(1)].join('')
+    const setField = (target)
+      ? [statField, lastField, target].join('.')
+      : [statField, lastField].join('.')
+    sets[setField] = last
+    // update
+    const isArray = (id instanceof Array)
+    if (!isArray) return this.coll.updateOne({ id }, { $inc: incs, $set: sets })
+    else return this.coll.updateMany({ id: { $in: id } }, { $inc: incs, $set: sets })
   }
+  */
+  async event () {}
+  static async event () {}
 
   //
 
   static async findOne (query, projection) {
-    if (query === null) return 0
+    if (query === null) return null
     if (typeof query === 'string') query = { id: query }
-    return new this(await this.coll.findOne(query, { projection }))
+    return this.coll.findOne(query, { projection })
   }
 
   static async find (query, projection, { sort = null, skip = null, limit = null, toArray = true, count = false } = {}) {
-    if (query === null) return 0
+    if (query === null) return null
     if (typeof query === 'string') {
       return this.findOne(query, projection)
     }

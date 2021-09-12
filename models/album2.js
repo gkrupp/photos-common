@@ -4,14 +4,16 @@ const fs = require('fs')
 const pathlib = require('path')
 const archiver = require('archiver')
 
-const projections = require('../constants/projections')
-const aggregations = require('../constants/aggregations')
+const queries = require('../constants/queries').albums
+const projections = require('../constants/projections').albums
+const aggregations = require('../constants/aggregations').albums
 const _Item = require('./_item')
 
 class Album extends _Item {
   static get idLength () { return 32 }
-  static get projections () { return projections.albums }
-  static get aggregations () { return aggregations.albums }
+  static get queries () { return queries }
+  static get projections () { return projections }
+  static get aggregations () { return aggregations }
 
   static async newDocument ({
     id = null, userId, albumId,

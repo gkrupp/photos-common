@@ -60,6 +60,9 @@ const users = {
 const items = {
   all: {},
   // default: { ..._default },
+  id: (opt) => ({
+    ...chunks.ids(opt)
+  }),
   path: (opt) => ({
     ...chunks.ids(opt),
     path: 1

@@ -1,31 +1,31 @@
+'use strict'
 
 const fs = require('fs')
 const pathlib = require('path')
 
-const projections = require('../constants/projections')
-const aggregations = require('../constants/aggregations')
+const queries = require('../constants/queries').photos
+const projections = require('../constants/projections').photos
+const aggregations = require('../constants/aggregations').photos
 const _item = require('./_item')
 
 const { pathPrefixRegExp } = require('../utils')
 
 module.exports = class Photo extends _item {
   static get idLength () { return 64 }
-  static get projections () { return projections.photos }
-  static get aggregations () { return aggregations.photos }
+  static get queries () { return queries }
+  static get projections () { return projections }
+  static get aggregations () { return aggregations }
   static get nativeSupportTypes () { return ['.jpg', '.jpeg'] }
   static get allowedTypes () { return this.nativeSupportTypes.concat([]) }
+  static get convertedExtension () { return 'jpg' }
+  static get convertedSuffix () { return 'cvrt' }
 
-  static init ({ coll = null, host = null, processorQueue = null }) {
+  static init ({ coll = null, host = null, processorQueue = null, convertedCache = null }) {
     this.coll = coll
     this.host = host
     this.processorQueue = processorQueue
+    this.convertedCache = convertedCache
     return this
-  }
-
-  constructor (coll, { host = '*', processorQueue = null } = {}) {
-    super(coll)
-    this.host = host
-    this.processorQueue = processorQueue
   }
 
   static async newDocument ({
@@ -36,7 +36,7 @@ module.exports = class Photo extends _item {
     indexed = new Date(), processed = {},
     flags = {}, stats = {},
     _processingFlags = []
-  }, { getStats = false }) {
+  }, { getStats = false } = {}) {
     if (getStats) {
       const stat = await fs.promises.stat(path)
       size = stat.size
@@ -70,7 +70,7 @@ module.exports = class Photo extends _item {
     return this.aggregateOne({ path: pathPrefixRegExp(pathPrefix, tailingSlash) }, Photo.aggregations.pathPrefixInfo()) || null
   }
 
-  async insert (docs = [], { returnOne = false, process = true } = {}) {
+  static async insert (docs = [], { returnOne = false, process = true } = {}) {
     const isArray = (docs instanceof Array)
     if (isArray && docs.length === 0) return []
     if (!isArray && (returnOne = true)) docs = [docs]
@@ -88,22 +88,42 @@ module.exports = class Photo extends _item {
     else return ret
   }
 
+  static async deleteOne (query) {
+    const doc = await this.findOne(query, this.projections.id())
+    if (doc === null) {
+      return 0
+    }
+    const id = doc.id
+    // cache
+    const convertedName = [id, this.convertedSuffix, this.convertedExtension].join('.')
+    await this.convertedCache.remove(convertedName)
+    // db
+    return super.deleteOne({ id })
+  }
+
+  static async delete (query) {
+    const docs = await this.find(query, this.projections.id())
+    let deletedCount = 0
+    for (const { id } of docs) {
+      deletedCount += await this.deleteOne(id)
+    }
+    return deletedCount
+  }
+
   static merge (inDB, inFS) {
     const insert = []
     const update = []
     const remain = []
     const remove = []
     for (const photo of inFS) {
-      const dbPhoto = inDB.find((el) => (el.path === photo.path && el.size === photo.size && el.modified.getTime() === photo.modified.getTime()))
+      const dbPhoto = inDB.find(el => (el.path === photo.path && el.size === photo.size && el.modified.getTime() === photo.modified.getTime()))
       // insert
       if (dbPhoto === undefined) {
         insert.push(photo)
-        continue
       // remain
       } else if (dbPhoto.albumId === photo.albumId) {
         photo.id = dbPhoto.id
         remain.push(dbPhoto.id)
-        continue
       // update
       } else {
         photo.id = dbPhoto.id
@@ -111,7 +131,6 @@ module.exports = class Photo extends _item {
           query: { id: photo.id },
           update: { $set: { albumId: photo.albumId } }
         })
-        continue
       }
     }
     return { insert, update, remain, remove }
