@@ -77,7 +77,8 @@ const items = {
   }),
   processor: (opt) => ({
     ...chunks.ids(opt),
-    path: 1
+    path: 1,
+    processed: 1
   }),
   serve: (opt) => ({
     ...chunks.ids(opt),

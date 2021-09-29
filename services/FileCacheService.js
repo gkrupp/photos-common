@@ -8,7 +8,7 @@ class FileCacheManager {
     this.levels = levels
     this.expire = expire
     this.interval = null
-    this.onInitError = onInitError || (() => console.error('FileCache init error.'))
+    this.onInitError = onInitError || (() => console.error(`FileCache init error. '${this.root}'`))
 
     if (init) this.__init()
     if (expire) {

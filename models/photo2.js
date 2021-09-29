@@ -8,6 +8,8 @@ const projections = require('../constants/projections').photos
 const aggregations = require('../constants/aggregations').photos
 const _item = require('./_item')
 
+const FileCacheService = require('../services/FileCacheService')
+
 const { pathPrefixRegExp } = require('../utils')
 
 module.exports = class Photo extends _item {
@@ -20,11 +22,11 @@ module.exports = class Photo extends _item {
   static get convertedExtension () { return 'jpg' }
   static get convertedSuffix () { return 'cvrt' }
 
-  static init ({ coll = null, host = null, processorQueue = null, convertedCache = null }) {
+  static init ({ coll = null, host = null, processorQueue = null, convertedCacheOpts = null }) {
     this.coll = coll
     this.host = host
     this.processorQueue = processorQueue
-    this.convertedCache = convertedCache
+    this.convertedCache = new FileCacheService(convertedCacheOpts)
     return this
   }
 
@@ -79,7 +81,7 @@ module.exports = class Photo extends _item {
       if (this.processorQueue === null) {
         console.error(`'processorQueue' is not defined, ${ret} will not be processed automatically`)
       } else {
-        const inserted = docs.map((doc, i) => ({ id: ret[i], path: doc.path }))
+        const inserted = docs.map((doc, i) => ({ id: ret[i], path: doc.path, processed: {} }))
         await Promise.all(inserted.map(photo => this.processorQueue.add(this.host, photo)))
         console.log(`processorQueue.add(${inserted.length} photos)`)
       }
