@@ -3,6 +3,8 @@ const projections = require('./projections')
 
 const allowedSortingFields = ['name', 'created', 'modified']
 
+const { pathPrefixRegExp } = require('../utils')
+
 const modifiers = {
   sort: ({ sort = 'created:1' } = {}) => {
     const sorting = sort
@@ -41,57 +43,74 @@ const modifierGroup = {
 
 const users = {
   apiAll: (opt = {}) => [
+    { $match: opt.match },
     { $project: projections.users.apiAll(opt) }
   ],
   apiDefault: (opt = {}) => [
+    { $match: opt.match },
     { $project: projections.users.apiDefault(opt) }
   ],
   apiMinimal: (opt = {}) => [
+    { $match: opt.match },
     { $project: projections.users.apiMinimal(opt) }
   ]
 }
 
+const items = {
+  pathPrefixInfo: (opt = {}) => {
+    const $group = {
+      _id: ''
+    }
+    if (opt.size) {
+      $group.size = { $sum: '$size' }
+    }
+    if (opt.span) {
+      $group.spanBegin = { $min: '$created' }
+      $group.spanEnd = { $max: '$created' }
+    }
+    return [
+      { $match: { path: pathPrefixRegExp(opt.path) } },
+      { $group },
+      { $project: { _id: 0 } }
+    ]
+  }
+}
+
 const albums = {
+  ...items,
   apiAll: (opt = {}) => [
+    { $match: opt.match },
     { $project: projections.albums.apiAll(opt) },
     ...modifierGroup.sortSkipLimit(opt)
   ],
   apiDefault: (opt = {}) => [
+    { $match: opt.match },
     { $project: projections.albums.apiDefault(opt) },
     ...modifierGroup.sortSkipLimit(opt)
   ],
   apiMinimal: (opt = {}) => [
+    { $match: opt.match },
     { $project: projections.albums.apiMinimal(opt) },
     ...modifierGroup.sortSkipLimit(opt)
   ]
 }
 
 const photos = {
+  ...items,
   apiAll: (opt = {}) => [
+    { $match: opt.match },
     { $project: projections.photos.apiAll(opt) },
     ...modifierGroup.sortSkipLimit(opt)
   ],
   apiDefault: (opt = {}) => [
+    { $match: opt.match },
     { $project: projections.photos.apiDefault(opt) },
     ...modifierGroup.sortSkipLimit(opt)
   ],
   apiMinimal: (opt = {}) => [
+    { $match: opt.match },
     { $project: projections.photos.apiMinimal(opt) },
     ...modifierGroup.sortSkipLimit(opt)
-  ],
-  pathPrefixInfo: (opt = {}) => [
-    {
-      $group: {
-        _id: '',
-        spanBegin: { $min: '$created' },
-        spanEnd: { $max: '$created' },
-        size: { $sum: '$size' }
-      }
-    },
-    { $project: { _id: 0 } }
-  ],
-  totalSize: (opt = {}) => [
-    { $group: { _id: '', size: { $sum: '$size' } } }
   ]
 }
 

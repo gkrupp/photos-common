@@ -2,9 +2,10 @@
 const { nanoid } = require('nanoid')
 
 class _Item {
+  static get defRetries () { return 3 }
+  static get idLength () { return null }
   static genId () { return nanoid(this.idLength) }
   static validateId (id) { return (typeof id === 'string' && id.length === this.idLength) }
-  static get defRetries () { return 3 }
 
   static init ({ coll = null }) {
     this.coll = coll
@@ -35,20 +36,20 @@ class _Item {
     return this.find({ albumId }, projection, { count })
   }
 
-  /*
-  async getItems (query, opt = {}, { one = false } = {}) {
-    const defaultDetails = 'default'
-    const defaultAggregation = 'apiDefault'
-    const details = (opt.details || defaultDetails).toLowerCase()
+  static async apiGet (query, details = 'default', aggrOpts = {}, { one = false } = {}) {
     // aggr
-    let aggr = ['api', details[0].toUpperCase() + details.slice(1)].join('')
-    if (!(aggr in this.constructor.aggregations)) aggr = defaultAggregation
-    const aggrPipe = this.constructor.aggregations[aggr](opt)
+    const aggr = ['api', details[0].toUpperCase() + details.slice(1)].join('')
+    if (!(aggr in this.aggregations)) {
+      throw Error(`Detail level '${details}' not exists.`)
+    }
+    const aggrPl = this.aggregations[aggr]({
+      ...aggrOpts,
+      match: this.QTT(query)
+    })
     // exec
-    if (one) return this.aggregateOne(query, aggrPipe)
-    else return this.aggregate(query, aggrPipe)
+    if (one) return this.aggregateOne(aggrPl)
+    else return this.aggregate(aggrPl)
   }
-  */
 
   //
 
@@ -173,6 +174,12 @@ class _Item {
     }
     query = this.QTT(query)
     return (await this.coll.deleteMany(query)).deletedCount
+  }
+
+  static async aggregateOne (pipeline) {
+    const res = await this.coll.aggregate(pipeline.concat([{ $limit: 1 }])).toArray()
+    if (res?.length) return res[0]
+    else return null
   }
 
   static async aggregate (pipeline, { toArray = true } = {}) {

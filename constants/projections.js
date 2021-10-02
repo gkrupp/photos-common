@@ -94,10 +94,8 @@ const albums = {
   apiAll: (opt = {}) => ({
     ...chunks.ids(opt),
     userId: 1,
-    albumId: 1,
     name: 1,
     ...chunks.createmod(opt),
-    permissions: 1,
     ...chunks.processing(opt),
     flags: 1
   }),
@@ -120,7 +118,6 @@ const photos = {
   apiAll: (opt = {}) => ({
     ...chunks.ids(opt),
     userId: 1,
-    albumId: 1,
     name: 1,
     extension: 1,
     size: 1,

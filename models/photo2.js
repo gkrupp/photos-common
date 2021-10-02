@@ -10,8 +10,6 @@ const _item = require('./_item')
 
 const FileCacheService = require('../services/FileCacheService')
 
-const { pathPrefixRegExp } = require('../utils')
-
 module.exports = class Photo extends _item {
   static get idLength () { return 64 }
   static get queries () { return queries }
@@ -26,7 +24,7 @@ module.exports = class Photo extends _item {
     this.coll = coll
     this.host = host
     this.processorQueue = processorQueue
-    this.convertedCache = new FileCacheService(convertedCacheOpts)
+    this.convertedCache = new FileCacheService(convertedCacheOpts || {})
     return this
   }
 
@@ -66,10 +64,6 @@ module.exports = class Photo extends _item {
       stats: (stats instanceof Object) ? stats : {},
       _processingFlags: (_processingFlags instanceof Array) ? _processingFlags : []
     })
-  }
-
-  async getPathPrefixInfo (pathPrefix = null, tailingSlash = false) {
-    return this.aggregateOne({ path: pathPrefixRegExp(pathPrefix, tailingSlash) }, Photo.aggregations.pathPrefixInfo()) || null
   }
 
   static async insert (docs = [], { returnOne = false, process = true } = {}) {
