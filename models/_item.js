@@ -1,6 +1,8 @@
 
 const { nanoid } = require('nanoid')
 
+const { ApiError } = require('../errors')
+
 class _Item {
   static get defRetries () { return 3 }
   static get idLength () { return null }
@@ -40,7 +42,10 @@ class _Item {
     // aggr
     const aggr = ['api', details[0].toUpperCase() + details.slice(1)].join('')
     if (!(aggr in this.aggregations)) {
-      throw Error(`Detail level '${details}' not exists.`)
+      throw new ApiError({
+        status: 400,
+        message: `Detail level '${details}' not exists.`
+      })
     }
     const aggrPl = this.aggregations[aggr]({
       ...aggrOpts,

@@ -73,7 +73,12 @@ const items = {
       { $group },
       { $project: { _id: 0 } }
     ]
-  }
+  },
+  pathPrefixUsers: (opt = {}) => ([
+    { $match: { path: pathPrefixRegExp(opt.path) } },
+    { $group: { _id: '$userId' } },
+    { $project: { _id: 0, userId: '$_id' } }
+  ])
 }
 
 const albums = {

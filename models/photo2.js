@@ -66,6 +66,28 @@ module.exports = class Photo extends _item {
     })
   }
 
+  //
+
+  async getPathPrefixInfo (info = {}) {
+    return this.constructor.getPathPrefixInfo(this.path, info)
+  }
+
+  static async getPathPrefixInfo (path, info = {}) {
+    const aggrOpts = { path, ...info }
+    return this.aggregateOne(this.aggregations.pathPrefixInfo(aggrOpts))
+  }
+
+  async getPathPrefixUsers () {
+    return this.constructor.getPathPrefixUsers(this.path)
+  }
+
+  static async getPathPrefixUsers (path) {
+    const users = await this.aggregate(this.aggregations.pathPrefixUsers({ path }))
+    return users.map(user => user.userId)
+  }
+
+  //
+
   static async insert (docs = [], { returnOne = false, process = true } = {}) {
     const isArray = (docs instanceof Array)
     if (isArray && docs.length === 0) return []

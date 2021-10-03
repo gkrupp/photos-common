@@ -15,12 +15,6 @@ class Album extends _Item {
   static get projections () { return projections }
   static get aggregations () { return aggregations }
 
-  static init ({ coll = null, photo = null }) {
-    this.coll = coll
-    this.Photo = photo
-    return this
-  }
-
   static async newDocument ({
     id = null, userId, albumId,
     path, name, created, modified,
@@ -55,16 +49,13 @@ class Album extends _Item {
     })
   }
 
-  async getInfo (info = {}) {
-    return this.constructor.getInfo(this.path, info)
+  async getPathPrefixUsers () {
+    return this.constructor.getPathPrefixUsers(this.path)
   }
 
-  static async getInfo (path, info = {}) {
-    const aggrOpts = {
-      path,
-      ...info
-    }
-    return this.Photo.aggregateOne(Album.aggregations.pathPrefixInfo(aggrOpts))
+  static async getPathPrefixUsers (path) {
+    const users = await this.aggregate(this.aggregations.pathPrefixUsers({ path }))
+    return users.map(user => user.userId)
   }
 
   //
