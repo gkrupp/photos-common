@@ -2,7 +2,6 @@
 
 const fs = require('fs')
 const pathlib = require('path')
-const archiver = require('archiver')
 
 const queries = require('../constants/queries').albums
 const projections = require('../constants/projections').albums
@@ -62,34 +61,6 @@ class Album extends _Item {
 
   async serve (stream, { type = 'zip', statConcurrency = 2, level = 0 } = {}) {
     return this.constructor.serve(this.id, stream, { type, statConcurrency, level })
-  }
-
-  static async serve (id, stream = null, { type = 'zip', statConcurrency = 2, level = 0 } = {}) {
-    const serve = await this.findOne(id, Album.projections.serve())
-    if (!serve) return null
-    // archive
-    const archive = archiver(type, {
-      statConcurrency,
-      zlib: { level }
-    })
-    archive.on('warning', (err) => {
-      console.error(err)
-      throw err
-    })
-    archive.on('error', (err) => {
-      throw err
-    })
-    archive.directory(serve.path, serve.name)
-    if (stream) {
-      archive.pipe(stream)
-      await archive.finalize()
-      return serve
-    } else {
-      return {
-        ...serve,
-        archive
-      }
-    }
   }
 
   static merge (inDB, inFS) {

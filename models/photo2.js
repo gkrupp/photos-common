@@ -98,6 +98,7 @@ module.exports = class Photo extends _item {
         console.error(`'processorQueue' is not defined, ${ret} will not be processed automatically`)
       } else {
         const inserted = docs.map((doc, i) => ({ id: ret[i], path: doc.path, processed: {} }))
+        await Promise.all(inserted.map(photo => Photo.pushProcessingFlags(photo.id, '@processing')))
         await Promise.all(inserted.map(photo => this.processorQueue.add(this.host, photo)))
         console.log(`processorQueue.add(${inserted.length} photos)`)
       }
@@ -134,7 +135,9 @@ module.exports = class Photo extends _item {
     const remain = []
     const remove = []
     for (const photo of inFS) {
-      const dbPhoto = inDB.find(el => (el.path === photo.path && el.size === photo.size && el.modified.getTime() === photo.modified.getTime()))
+      const dbPhoto = inDB.find(el => {
+        return (el.path === photo.path && el.size === photo.size)
+      })
       // insert
       if (dbPhoto === undefined) {
         insert.push(photo)

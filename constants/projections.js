@@ -79,18 +79,17 @@ const items = {
     ...chunks.ids(opt),
     path: 1,
     processed: 1
-  }),
-  serve: (opt) => ({
-    ...chunks.ids(opt),
-    path: 1,
-    name: 1,
-    permissions: 1,
-    ...chunks.wh(opt)
   })
 }
 
 const albums = {
   ...items,
+  serve: (opt) => ({
+    ...chunks.ids(opt),
+    path: 1,
+    name: 1,
+    permissions: 1
+  }),
   apiAll: (opt = {}) => ({
     ...chunks.ids(opt),
     userId: 1,
@@ -115,6 +114,13 @@ const albums = {
 
 const photos = {
   ...items,
+  serve: (opt) => ({
+    ...chunks.ids(opt),
+    path: 1,
+    name: 1,
+    permissions: 1,
+    ...chunks.wh(opt)
+  }),
   apiAll: (opt = {}) => ({
     ...chunks.ids(opt),
     userId: 1,
