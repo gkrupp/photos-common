@@ -23,11 +23,13 @@ const chunks = {
   shade: () => ({
     shade: { $arrayElemAt: ['$colors.dominant.hex', 0] }
   }),
-  meta: () => ({
-    dimensions: 1,
-    exif: 1,
-    location: 1
-  }),
+  meta: function () {
+    return {
+      dimensions: 1,
+      exif: 1,
+      ...this.location()
+    }
+  },
   location: () => ({
     location: '$location.coordinates'
   }),
